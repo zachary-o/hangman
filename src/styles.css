@@ -1,0 +1,60 @@
+.App {
+  background-color: rgb(119, 222, 16);
+}
+
+.gallows {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+}
+
+.gallows-image {
+  width: 200px;
+}
+
+.word {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  font-size: 24px;
+  margin-bottom: -30px;
+}
+
+.letter {
+  padding: 0 20px;
+}
+
+.letter-hidden {
+  padding: 0 20px;
+  visibility: hidden;
+}
+
+.underscores {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  font-size: 24px;
+}
+
+.underscore {
+  padding: 0 20px;
+}
+
+.alphabet {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+}
+
+.alphabet-button {
+  margin: 5px;
+}
+
+.alphabet-button-disabled {
+  opacity: 0.6;
+  margin: 5px;
+}
