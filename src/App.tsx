@@ -16,7 +16,8 @@ function App() {
 
   useEffect(() => {
     const randomWordGenerator = () => {
-      const randomWord: string = words[Math.floor(Math.random() * 3)];
+      const randomWord: string =
+        words[Math.floor(Math.random() * words.length)];
       setRandomWord(randomWord);
     };
     randomWordGenerator();
