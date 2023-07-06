@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+import Confetti from "react-confetti";
+
 require("./styles.css");
 
 function App() {
@@ -7,6 +9,7 @@ function App() {
   const [randomWord, setRandomWord] = useState("dog");
   const [indexes, setIndexes] = useState<number[]>([]);
   const [pressedLetters, setPressedLetters] = useState<string[]>([]);
+  const [isWin, setIsWin] = useState(false);
 
   const alphabet: string[] = "abcdefghijklmnopqrstuvwxyz".split("");
   const words: string[] = ["book", "chair", "table"];
@@ -22,9 +25,11 @@ function App() {
   useEffect(() => {
     const endGame = randomWord.length === indexes.length;
     if (endGame) {
-      alert(`Congratulations! You guessed the word ${randomWord}`);
+      setIsWin(true);
+    } else if (step === 8) {
+      alert(`The word was ${randomWord}`);
     }
-  }, [indexes]);
+  }, [indexes, step]);
 
   const checkLetter = (letter: string) => {
     if (pressedLetters.includes(letter)) {
@@ -56,10 +61,11 @@ function App() {
     }
   };
 
-  console.log(indexes);
+  console.log(step);
 
   return (
     <div className="App">
+      {isWin && <Confetti />}
       <div className="gallows">
         <img src={`./images/${step}.png`} alt="" className="gallows-image" />
       </div>
