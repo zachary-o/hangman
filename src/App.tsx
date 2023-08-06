@@ -1,36 +1,61 @@
 import { useState, useEffect } from "react";
 
 import Confetti from "react-confetti";
+import getRandomWord from "./utils/getRandomWord";
+
+import IWord from "./interfaces";
 
 require("./styles.css");
 
 function App() {
-  const [step, setStep] = useState(0);
-  const [randomWord, setRandomWord] = useState("dog");
+  const [step, setStep] = useState<number>(0);
   const [indexes, setIndexes] = useState<number[]>([]);
   const [pressedLetters, setPressedLetters] = useState<string[]>([]);
-  const [isWin, setIsWin] = useState(false);
+  const [isWin, setIsWin] = useState<boolean>(false);
+  const [isLost, setIsLost] = useState<boolean>(false);
+  const [randomWordnik, setRandomWordnik] = useState<IWord>({
+    word: "",
+    definition: "",
+  });
 
-  const alphabet: string[] = "abcdefghijklmnopqrstuvwxyz".split("");
-  const words: string[] = ["book", "chair", "table"];
+  const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
 
   useEffect(() => {
-    const randomWordGenerator = () => {
-      const randomWord: string =
-        words[Math.floor(Math.random() * words.length)];
-      setRandomWord(randomWord);
+    const fetchWord = async () => {
+      const word = await getRandomWord();
+      if (word) {
+        console.log("word", word);
+        setRandomWordnik(word);
+      }
     };
-    randomWordGenerator();
+    fetchWord();
   }, []);
 
   useEffect(() => {
-    const endGame = randomWord.length === indexes.length;
-    if (endGame) {
+    const endGame = randomWordnik.word.length === indexes.length;
+    if (endGame && randomWordnik.word !== "") {
       setIsWin(true);
     } else if (step === 8) {
-      alert(`The word was ${randomWord}`);
+      setIsLost(true);
     }
   }, [indexes, step]);
+
+  const handleNewGame = () => {
+    setStep(0);
+    setIndexes([]);
+    setIsLost(false);
+    setIsWin(false);
+    setPressedLetters([]);
+
+    const fetchWord = async () => {
+      const word = await getRandomWord();
+      if (word) {
+        console.log("word", word);
+        setRandomWordnik(word);
+      }
+    };
+    fetchWord();
+  };
 
   const checkLetter = (letter: string) => {
     if (pressedLetters.includes(letter)) {
@@ -38,22 +63,25 @@ function App() {
     }
     setPressedLetters((prevLetters) => [...prevLetters, letter]);
 
-    if (randomWord.includes(letter)) {
-      let indexesArr: number[] = [...indexes];
-      for (let i = 0; i < randomWord.length; i++) {
-        if (randomWord[i] === letter && !indexes.includes(i)) {
+    if (randomWordnik.word.toLowerCase().includes(letter)) {
+      let indexesArr = [...indexes];
+      for (let i = 0; i < randomWordnik.word.length; i++) {
+        if (
+          randomWordnik.word[i].toLowerCase() === letter &&
+          !indexes.includes(i)
+        ) {
           indexesArr.push(i);
         }
       }
       setIndexes(indexesArr);
-    } else if (!randomWord.includes(letter)) {
+    } else if (!randomWordnik.word.includes(letter)) {
       setStep((prevStep) => prevStep + 1);
     }
   };
 
-  const letterStyling = (letter: string): string => {
+  const letterStyling = (letter: string) => {
     const found = indexes.find((i) => {
-      return randomWord[i] === letter;
+      return randomWordnik.word[i] === letter;
     });
     if (found !== undefined) {
       return "letter";
@@ -62,30 +90,43 @@ function App() {
     }
   };
 
-  console.log(step);
+  const cleanDefinition = (definition: string) => {
+    definition = definition.replace(/<\/?xref>/g, "");
+    definition = definition.replace(/<\/?i>/g, "");
+    definition = definition.replace(/<\/?strong>/g, "");
+    definition = definition.replace(/<\/?em>/g, "");
+    definition = definition.replace(
+      /<internalXref(?: urlencoded="[^"]*")?>.*?<\/internalXref>/g,
+      ""
+    );
+    definition = definition.replace(/<\/?em>/g, "");
+
+    return definition;
+  };
 
   return (
-    <div className="App">
+    <div className="wrapper">
       {isWin && <Confetti />}
       <div className="gallows">
         <img src={`./images/${step}.png`} alt="" className="gallows-image" />
       </div>
-      <div className="word">
-        {randomWord.split("").map((letter, index) => (
-          <p key={index} className={letterStyling(letter)}>
-            {letter}
-          </p>
-        ))}
-      </div>
-      <div className="underscores">
-        {Array(randomWord.length)
-          .fill("_")
-          .map((underscore, index) => (
-            <p key={index} className="underscore">
-              {underscore}
-            </p>
+      {isLost ? (
+        <h1>
+          The word was <span className="hidden-word">{randomWordnik.word}</span>
+        </h1>
+      ) : (
+        <div className="word">
+          {randomWordnik.word.split("").map((letter, index) => (
+            <div key={index} className="letters">
+              <p className={letterStyling(letter)}>{letter}</p>
+              <p className="underscore">_</p>
+            </div>
           ))}
-      </div>
+        </div>
+      )}
+      <h3 className="definition">
+        {cleanDefinition(randomWordnik.definition ?? "")}
+      </h3>
       <div className="alphabet">
         {alphabet.map((letter, index) => (
           <button
@@ -100,6 +141,20 @@ function App() {
             {letter}
           </button>
         ))}
+      </div>
+      <div className="wikipedia-new-game">
+        {(isWin || isLost) && (
+          <button onClick={handleNewGame} className="new-game-btn">
+            New Game
+          </button>
+        )}
+        {(isWin || isLost) && (
+          <a
+            href={`https://en.wikipedia.org/wiki/${randomWordnik.word}`}
+            target="_blank"
+            rel="noreferrer"
+          >{`Read about ${randomWordnik.word} on Wikipedia`}</a>
+        )}
       </div>
     </div>
   );
